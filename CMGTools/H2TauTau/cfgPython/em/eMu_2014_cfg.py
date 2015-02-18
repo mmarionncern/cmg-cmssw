@@ -2,74 +2,40 @@ import PhysicsTools.HeppyCore.framework.config as cfg
 from PhysicsTools.HeppyCore.framework.config import printComps
 
 # Tau-tau analyzers
-from CMGTools.H2TauTau.proto.analyzers.TauEleAnalyzer import TauEleAnalyzer
-from CMGTools.H2TauTau.proto.analyzers.H2TauTauTreeProducerTauEle import H2TauTauTreeProducerTauEle
+from CMGTools.H2TauTau.proto.analyzers.EMuAnalyzer                import EMuAnalyzer
+from CMGTools.H2TauTau.proto.analyzers.H2TauTauTreeProducerEMu    import H2TauTauTreeProducerEMu
 
 # common configuration and sequence
 from CMGTools.H2TauTau.htt_ntuple_base_cff import *
 
-# 'Nom', 'Up', 'Down', or None
-shift = None
-# 1.0, 1.03, 0.97
-tauScaleShift = 1.0
-
+# local switches
 syncntuple = False
 
-puFileMC = None
-puFileData = None
-
-# hlt_tauEffWeight_mc = 'effTau_eTau_MC_2012ABCDSummer13'
-# hlt_tauEffWeight = 'effTau_eTau_Data_2012ABCDSummer13'
-# hlt_eleEffWeight_mc = 'effEle_eTau_MC_2012ABCD'
-# hlt_eleEffWeight = 'effEle_eTau_Data_2012ABCDSummer13'
-
-hlt_tauEffWeight_mc = None
-hlt_tauEffWeight = None
-hlt_eleEffWeight_mc = None
-hlt_eleEffWeight = None
-
 eventSelector.toSelect = []
-    
-diLeptonAna.class_object = TauEleAnalyzer
-diLeptonAna.name = 'TauEleAnalyzer'
-diLeptonAna.scaleShift1 = tauScaleShift
-diLeptonAna.pt1 = 20
-diLeptonAna.eta1 = 2.3
-diLeptonAna.iso1 = None
-diLeptonAna.pt2 = 24
-diLeptonAna.eta2 = 2.1
-diLeptonAna.iso2 = 0.1
-diLeptonAna.m_min = 10
-diLeptonAna.m_max = 99999
-diLeptonAna.dR_min = 0.5
-diLeptonAna.triggerMap = pathsAndFilters
-diLeptonAna.verbose = False
 
-dyJetsFakeAna.channel = 'et'
+diLeptonAna.class_object = MuEleAnalyzer               
+diLeptonAna.name         = 'MuEleAnalyzer'             
+diLeptonAna.pt1          = 10.            
+diLeptonAna.eta1         = 2.5            
+diLeptonAna.iso1         = 10.            
+diLeptonAna.looseiso1    = 10.            
+diLeptonAna.pt2          = 10.            
+diLeptonAna.eta2         = 2.5            
+diLeptonAna.iso2         = 10.            
+diLeptonAna.looseiso2    = 10.            
+diLeptonAna.m_min        = 10             
+diLeptonAna.m_max        = 99999          
+diLeptonAna.dR_min       = 0.5            
+diLeptonAna.triggerMap   = pathsAndFilters
+diLeptonAna.jetPt        = 30.            
+diLeptonAna.jetEta       = 4.7            
+diLeptonAna.relaxJetId   = False          
+diLeptonAna.verbose      = False           
 
-dyLLReweighterTauEle = cfg.Analyzer(
-    DYLLReweighterTauEle,
-    'DYLLReweighterTauEle',
-    # 2012 
-    W1p0PB = 1., #1.37, # weight for 1 prong 0 Pi Barrel
-    W1p0PE = 1., #1.11,
-    W1p1PB = 1., #2.18,
-    W1p1PE = 1., #0.47,
-    verbose = False
-    )
+dyJetsFakeAna.channel = 'em'
 
-tauDecayModeWeighter = cfg.Analyzer(
-    TauDecayModeWeighter,
-    'TauDecayModeWeighter',
-    )
-
-tauFakeRateWeighter = cfg.Analyzer(
-    TauFakeRateWeighter,
-    'TauFakeRateWeighter'
-    )
-
-treeProducer.class_object = H2TauTauTreeProducerTauEle
-treeProducer.name         = 'H2TauTauTreeProducerTauEle'
+treeProducer.class_object = H2TauTauTreeProducerMuEle
+treeProducer.name         = 'H2TauTauTreeProducerMuEle'
 
 ###################################################
 ### CONNECT SAMPLES TO THEIR ALIASES AND FILES  ###
@@ -98,9 +64,6 @@ selectedComponents = allsamples
 ###                  SEQUENCE                   ###
 ###################################################
 sequence = commonSequence
-sequence.append( tauDecayModeWeighter ) # insert at the end
-sequence.append( tauFakeRateWeighter  ) # insert at the end
-sequence.insert( sequence.index(dyJetsFakeAna) + 1, dyLLReweighterTauEle ) # insert DY->LL weigher 
 # RIC: off until fixed
 # if not syncntuple:
 #   sequence.remove( treeProducerXCheck )
@@ -155,9 +118,3 @@ config = cfg.Config( components   = selectedComponents,
                      services     = []                ,  
                      events_class = Events
                      )
-
-printComps(config.components, True)
-
-def modCfgForPlot(config):
-    config.components = []
-

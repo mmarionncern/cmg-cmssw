@@ -2,7 +2,8 @@ import operator
 
 from PhysicsTools.Heppy.analyzers.core.AutoHandle import AutoHandle
 from PhysicsTools.Heppy.physicsobjects.PhysicsObjects import Muon, GenParticle
-from PhysicsTools.Heppy.physicsobjects.HTauTauElectron import HTauTauElectron as Electron
+# from PhysicsTools.Heppy.physicsobjects.HTauTauElectron  import HTauTauElectron as Electron
+from PhysicsTools.Heppy.physicsobjects.Electron         import Electron
 
 from CMGTools.H2TauTau.proto.analyzers.DiLeptonAnalyzer import DiLeptonAnalyzer
 from CMGTools.H2TauTau.proto.physicsobjects.DiObject import TauMuon
@@ -91,8 +92,8 @@ class TauMuAnalyzer( DiLeptonAnalyzer ):
             # it must have well id'ed and trig matched legs,
             # di-lepton and tri-lepton veto must pass
             result = self.selectionSequence(event, fillCounter=False,
-                                            leg1IsoCut = -9999,
-                                            leg2IsoCut = 9999)
+                                            leg1IsoCut=-9999,
+                                            leg2IsoCut=9999)
             if result is False:
                 # really no way to find a suitable di-lepton,
                 # even in the control region
@@ -112,7 +113,8 @@ class TauMuAnalyzer( DiLeptonAnalyzer ):
                 event.genMatched = True
             else:
                 event.genMatched = False
-                
+        
+#         import pdb ; pdb.set_trace()        
         return True
         
 
@@ -120,7 +122,7 @@ class TauMuAnalyzer( DiLeptonAnalyzer ):
         return tau.tauID('decayModeFinding')>0.5 and \
                tau.tauID("againstMuonTight")>0.5 and \
                tau.tauID("againstElectronLoose")>0.5 and \
-               self.testVertex( tau )
+               self.testTauVertex(tau)
         
 
     def testLeg1Iso(self, tau, isocut):
@@ -133,10 +135,15 @@ class TauMuAnalyzer( DiLeptonAnalyzer ):
             return tau.tauID("byIsolationMVA3newDMwLTraw")>isocut
 
 
+    def testTauVertex(self, lepton):
+        '''Tests vertex constraints, for tau'''
+        #return abs(lepton.dxy()) < 0.045 and \
+        isPV = lepton.vertex().z() == lepton.associatedVertex.z()
+        return isPV #abs(lepton.dz()) < 0.2 
+
     def testVertex(self, lepton):
-        '''Tests vertex constraints, for mu and tau'''
-        return abs(lepton.dxy()) < 0.045 and \
-               abs(lepton.dz()) < 0.2 
+        '''Tests vertex constraints, for mu'''
+        return abs(lepton.dxy()) < 0.045 and abs(lepton.dz()) < 0.2 
 
 
     def testLeg2ID(self, muon):
