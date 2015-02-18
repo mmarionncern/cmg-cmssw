@@ -100,11 +100,22 @@ susyMultilepton_globalVariables = susyCore_globalVariables + [
             NTupleVariable("chi2pvtrksABDbutCdof", lambda ev: ev.chi2pvtrksABDbutC[1], help="DOF from the fit to the PV of A,B,D"),
             NTupleVariable("chi2pvtrksABCbutDval", lambda ev: ev.chi2pvtrksABCbutD[0], help="chi2 of the fit to the PV of A,B,C"),
             NTupleVariable("chi2pvtrksABCbutDdof", lambda ev: ev.chi2pvtrksABCbutD[1], help="DOF from the fit to the PV of A,B,C"),
+
+            ## extra JME variables ==================================
+           # "metsig" : ( AutoHandle( ("METSignificance","METSignificance"), "double" ),
+           #              NTupleVariable("metSig", metType, help="PF Type1 MET Significance")),
+
+
 ]
+
 
 susyMultilepton_globalObjects = susyCore_globalObjects.copy()
 susyMultilepton_globalObjects.update({
             # put more here
+
+        ## extra JME variables ==================================
+      #  "mvamet" : ( AutoHandle( ("pfMVAMEt",), "std::vector<pat::MET>" ),
+       #              NTupleObject("MvaMET", metType, help="MVA MET")),
 })
 
 susyMultilepton_collections = susyCore_collections.copy()
@@ -126,4 +137,29 @@ susyMultilepton_collections.update({
             "ivf"       : NTupleCollection("SV",     svType, 20, help="SVs from IVF"),
             "genBHadrons"  : NTupleCollection("GenBHad", heavyFlavourHadronType, 20, mcOnly=True, help="Gen-level B hadrons"),
             "genDHadrons"  : NTupleCollection("GenDHad", heavyFlavourHadronType, 20, mcOnly=True, help="Gen-level D hadrons"),
+
+
+            ## extra JME variables ==================================
+            # fat jets
+      #      "ca08Filt"       : ( AutoHandle( ("ca08PFJetsCHSFiltered",), "std::vector<reco::BasicJet>" ),
+      #                           NTupleCollection("FatJetF",     jetTypeSusy, 8, help="ca08 fat jet filtered")),
+      #      "ca08Prun"       : ( AutoHandle( ("ca08PFJetsCHSPruned",), "std::vector<reco::BasicJet>" ),
+      #                           NTupleCollection("FatJetP",     particleType, 8, help="ca08 fat jet pruned")),
+      #      "ca08Trim"       : ( AutoHandle( ("ca08PFJetsCHSTrimmed",), "std::vector<reco::BasicJet>" ),
+       #                          NTupleCollection("FatJetT",     particleType, 8, help="ca08 fat jet trimmed")),
+      #      "ca08SD"         : ( AutoHandle( ("ca08PFJetsCHSSoftDrop",), "std::vector<reco::BasicJet>" ),
+      #                           NTupleCollection("FatJetSD",     particleType, 8, help="ca08 fat jet soft drop")),
+            
+            # and subjets
+      #      "SJCa08Filt"       : ( AutoHandle( ("ca08PFJetsCHSFiltered","SubJets"), "std::vector<reco::PFJet>" ),
+      #                             NTupleCollection("SubJetF",     particleType, 8, help="ca08 subjets filtered")),
+      #      "SJCa08Prun"       : ( AutoHandle( ("ca08PFJetsCHSPruned","SubJets"), "std::vector<reco::PFJet>" ),
+      #                             NTupleCollection("SubJetP",     particleType, 8, help="ca08 subjets pruned")),
+      #      "SJCa08Trim"       : ( AutoHandle( ("ca08PFJetsCHSTrimmed","SubJets"), "std::vector<reco::PFJet>" ),
+      #                             NTupleCollection("SubJetT",     particleType, 8, help="ca08 subjets trimmed")),
+      #      "SJCa08SD"         : ( AutoHandle( ("ca08PFJetsCHSSoftDrop","SubJets"), "std::vector<reco::PFJet>" ),
+      #                             NTupleCollection("SubJetSD",     particleType, 8, help="ca08 subjets soft drop")),
+            
+
+
 })
