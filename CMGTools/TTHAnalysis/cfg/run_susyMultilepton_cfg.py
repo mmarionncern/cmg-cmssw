@@ -169,16 +169,6 @@ elif test == '2lss-sync': # sync
     comp.fineSplitFactor = 10
     selectedComponents = [ comp ]
 
-## output histogram
-from PhysicsTools.HeppyCore.framework.services.tfile import TFileService
-output_service = cfg.Service(
-    TFileService,
-    'outputfile',
-    name="outputfile",
-    fname='tree.root',
-    option='recreate'
-    )    
-
 
 # the following is declared in case this cfg is used in input to the heppy.py script
 from PhysicsTools.HeppyCore.framework.eventsfwlite import Events
@@ -188,5 +178,5 @@ if getHeppyOption("nofetch"):
     event_class = Events 
 config = cfg.Config( components = selectedComponents,
                      sequence = sequence,
-                     services = [output_service],  
+                     services = [],  
                      events_class = event_class)
