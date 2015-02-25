@@ -32,9 +32,6 @@ ttHEventAna = cfg.Analyzer(
     minJets25 = 0,
     )
 
-#preprocessing for advanced jetmet variables
-from PhysicsTools.Heppy.utils.cmsswPreprocessor import CmsswPreprocessor
-preprocessor = CmsswPreprocessor("producejetMETObjects_v2.py")
 
 ## Insert the SV analyzer in the sequence
 susyCoreSequence.insert(susyCoreSequence.index(ttHCoreEventAna), 
@@ -94,6 +91,10 @@ treeProducer = cfg.Analyzer(
 
 )
 
+## and the tau producer
+from PhysicsTools.Heppy.analyzers.objects.TauAnalyzer import TauAnalyzer
+TauAna = TauAnalyzer.defaultConfig
+
 #-------- SAMPLES AND TRIGGERS -----------
 
 #-------- SEQUENCE
@@ -107,16 +108,15 @@ from CMGTools.TTHAnalysis.samples.samples_13TeV_PHYS14 import *
 from CMGTools.TTHAnalysis.samples.samples_13TeV_CSA14v2 import SingleMu
 
 selectedComponents = [
-  # ] + WJetsToLNuHT + DYJetsM50HT + [DYJetsToLL_M50,
- #   TTJets ]+ SingleTop +[
- #   TTWJets,TTZJets, TTH,
+   ] + WJetsToLNuHT + DYJetsM50HT + [DYJetsToLL_M50,
+    TTJets ]+ SingleTop +[
+    TTWJets,TTZJets, TTH,
     WZJetsTo3LNu,
- # ZZTo4L,
-  #  GGHZZ4L,
-  #  SMS_T1tttt_2J_mGl1500_mLSP100,
-  #  SMS_T1tttt_2J_mGl1200_mLSP800
+    ZZTo4L,
+    GGHZZ4L,
+    SMS_T1tttt_2J_mGl1500_mLSP100,
+    SMS_T1tttt_2J_mGl1200_mLSP800
 ]
-
 
 sequence = cfg.Sequence(susyCoreSequence+[
     ttHEventAna,
@@ -124,9 +124,9 @@ sequence = cfg.Sequence(susyCoreSequence+[
     ])
 
 # -- fine splitting, for some private MC samples with a single file
-for comp in selectedComponents:
-    comp.splitFactor = 1
-#    comp.fineSplitFactor = 40
+#for comp in selectedComponents:
+#    comp.splitFactor = 1
+    #comp.fineSplitFactor = 100
     
 from PhysicsTools.HeppyCore.framework.heppy import getHeppyOption
 test = getHeppyOption('test')
@@ -178,7 +178,7 @@ elif test == '2lss-sync': # sync
     comp.fineSplitFactor = 10
     selectedComponents = [ comp ]
 
-## output histogram?
+## output histogram
 from PhysicsTools.HeppyCore.framework.services.tfile import TFileService
 output_service = cfg.Service(
     TFileService,
@@ -187,6 +187,7 @@ output_service = cfg.Service(
     fname='tree.root',
     option='recreate'
     )    
+
 
 # the following is declared in case this cfg is used in input to the heppy.py script
 from PhysicsTools.HeppyCore.framework.eventsfwlite import Events
@@ -197,5 +198,4 @@ if getHeppyOption("nofetch"):
 config = cfg.Config( components = selectedComponents,
                      sequence = sequence,
                      services = [output_service],  
-                     preprocessor=preprocessor, #this would run cmsRun makeAK5Jets.py before running Heppy
                      events_class = event_class)
