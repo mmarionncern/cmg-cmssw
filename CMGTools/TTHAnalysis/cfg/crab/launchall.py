@@ -4,11 +4,11 @@ import imp, os
 # number of jobs to run per dataset decided based on splitFactor and fineSplitFactor from cfg file
 # in principle one only needs to modify the following two lines:
 #production_label = "prod747data_Run2015B_golden_residual_all"
-production_label = "prod747mc_Spring15"
-cmg_version = 'MT2_CMGTools-from-CMSSW_7_4_7'
+production_label = "prod747heppySUSYV2"
+cmg_version = 'CMGTools-from-CMSSW_7_4_7'
 
 debug  = False
-useAAA = True
+useAAA = False
 
 
 # update most recent DCS-only json

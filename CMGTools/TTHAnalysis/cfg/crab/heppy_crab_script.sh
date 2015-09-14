@@ -29,6 +29,16 @@ do
     cp -r $i/* $CMSSW_BASE/$i
 done
 
+if [ -d "$CMSSW_BASE/python/PhysicsTools/PatAlgos" ]; then
+    mv $CMSSW_BASE/python/PhysicsTools/PatAlgos $CMSSW_BASE/src/PhysicsTools/PatAlgos/python
+    ln -s $CMSSW_BASE/src/PhysicsTools/PatAlgos/python $CMSSW_BASE/python/PhysicsTools/PatAlgos
+fi
+if [ -d "$CMSSW_BASE/python/PhysicsTools/PatUtils" ]; then
+    mv $CMSSW_BASE/python/PhysicsTools/PatUtils $CMSSW_BASE/src/PhysicsTools/PatUtils/python
+    ln -s $CMSSW_BASE/src/PhysicsTools/PatUtils/python $CMSSW_BASE/python/PhysicsTools/PatUtils
+fi
+
+
 #ls -lR 
 
 python heppy_crab_script.py $@
