@@ -1,1 +1,1 @@
-../run_susyMT2_cfg.py
+../run_susyMultilepton_cfg.py

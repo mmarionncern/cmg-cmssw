@@ -8,7 +8,9 @@ import sys
 import re
 #import PSet
 
-dataset = ""
+#dataset = "/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-AsymptNoPURawReco_MCRUN2_74_V9A-v4/MINIAODSIM"
+dataset = "/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM"
+#dataset = "/ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"
 total = 0  # total number of jobs for given dataset, not used at the moment
 nevents = None # this means run all events
 nprint  = 0 # quiet printout, change if you want to print the first nprint events
@@ -82,11 +84,11 @@ looper = Looper( 'Output', config, nPrint = nprint, nEvents = nevents)
 looper.loop()
 looper.write()
 
-#os.system("ls -lR") # for debugging
+os.system("ls -lR") # for debugging
 
 # assign the right name
-os.rename("Output/mt2.root", "mt2.root")
-os.rename("Output/RLTInfo.root", "RLTInfo.root")
+os.rename("Output/treeProducerSusyMultilepton/tree.root", "tree.root")
+os.rename("Output/skimAnalyzerCount/SkimReport.pck", "SkimReport.pck")
 
 # print in crab log file the content of the job log files, so one can see it from 'crab getlog'
 print "-"*25
@@ -100,8 +102,8 @@ os.system("tar czf output.log.tgz Output/")
 
 
 import ROOT
-f=ROOT.TFile.Open('mt2.root')
-entries=f.Get('mt2').GetEntries()
+f=ROOT.TFile.Open('tree.root')
+entries=f.Get('tree').GetEntries()
 f.Close()
 
 print entries, "events processed"

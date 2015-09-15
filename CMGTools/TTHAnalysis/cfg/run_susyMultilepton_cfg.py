@@ -230,6 +230,17 @@ treeProducer = cfg.Analyzer(
      collections = susyMultilepton_collections,
 )
 
+
+## Jet lite cleaned
+#jetAna.subtractLeptonsFromJets = True
+#pfChargedCHSjetAna.subtractLeptonsFromJets = False
+#ttHFatJetAna.subtractLeptonsFromJets = False
+#susyMultilepton_collections.update({
+#        "jetsSoftReclustered"       : NTupleCollection("JetLepCleaned",     jetTypeSusyExtra, 15, help="jets after lepton cleaning, sorted by pt"),
+#})
+
+
+
 ## histo counter
 susyCoreSequence.insert(susyCoreSequence.index(skimAnalyzer),
                         susyCounter)
@@ -461,10 +472,12 @@ if doMETpreprocessor:
     import subprocess
     jecDBFile = '$CMSSW_BASE/src/CMGTools/RootTools/data/jec/Summer15_%s_%s.db'%('50nsV5' if is50ns else '25nsV2','DATA' if isData else 'MC')
     jecEra    = 'Summer15_%s_%s'%('50nsV5' if is50ns else '25nsV2', 'DATA'if isData else 'MC')
-    tempfile.tempdir=os.environ['CMSSW_BASE']+'/tmp'
-    tfile, tpath = tempfile.mkstemp(suffix='.py',prefix='MET_preproc_')
-    os.close(tfile)
-    preprocessorFile = tpath
+    ##Disabled for heppy
+    #tempfile.tempdir=os.environ['CMSSW_BASE']+'/src/CMGTools/TTHAnalysis/python'
+    #tfile, tpath = tempfile.mkstemp(suffix='.py',prefix='MET_preproc_')
+    #os.close(tfile)
+    #preprocessorFile = tpath
+    preprocessorFile = "$CMSSW_BASE/tmp/MetType1_jec_%s.py"%(jecEra)
     extraArgs=[]
     if isData:
       extraArgs.append('--isData')
@@ -484,7 +497,7 @@ if doMETpreprocessor:
     #print " ".join(args)
     subprocess.call(args)
     from PhysicsTools.Heppy.utils.cmsswPreprocessor import CmsswPreprocessor
-    preprocessor = CmsswPreprocessor(preprocessorFile,prefetch=True) # prefetching input file for preprocessor
+    preprocessor = CmsswPreprocessor(preprocessorFile)#,prefetch=True) # prefetching input file for preprocessor
 
 
 #-------- HOW TO RUN -----------
