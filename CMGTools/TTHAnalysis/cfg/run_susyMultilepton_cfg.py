@@ -5,6 +5,8 @@
 import PhysicsTools.HeppyCore.framework.config as cfg
 import re
 
+#-------- loading option handling ------
+from PhysicsTools.HeppyCore.framework.heppy_loop import getHeppyOption
 
 #-------- LOAD ALL ANALYZERS -----------
 
@@ -359,6 +361,11 @@ if False: # For running on data
     json = "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt"
     processing = "Run2015C-PromptReco-v1"; short = "Run2015C_v1"; run_ranges = [ (254231,254907) ]; useAAA=False; is50ns=False
 
+    #external JSON source
+    jsonExt = getHeppyOption("json")
+    if jsonExt != "":
+        json = jsonExt
+
     compSelection = ""; compVeto = ""
     DatasetsAndTriggers = []
     selectedComponents = []; vetos = []  
@@ -367,11 +374,11 @@ if False: # For running on data
         DatasetsAndTriggers.append( ("MET", triggers_Jet80MET90 + triggers_Jet80MET120 + triggers_MET120Mu5 ) )
         #DatasetsAndTriggers.append( ("SingleMuon", triggers_1mu_iso + triggers_1mu_iso_50ns + triggers_1mu_noniso) )
     else:
-        DatasetsAndTriggers.append( ("DoubleMuon", triggers_mumu_iso + triggers_mumu_ss + triggers_mumu_ht + triggers_3mu + triggers_3mu_alt) )
-        DatasetsAndTriggers.append( ("DoubleEG",   triggers_ee + triggers_ee_ht + triggers_3e) )
+        #DatasetsAndTriggers.append( ("DoubleMuon", triggers_mumu_iso + triggers_mumu_ss + triggers_mumu_ht + triggers_3mu + triggers_3mu_alt) )
+        #DatasetsAndTriggers.append( ("DoubleEG",   triggers_ee + triggers_ee_ht + triggers_3e) )
         DatasetsAndTriggers.append( ("MuonEG",     triggers_mue + triggers_mue_ht + triggers_2mu1e + triggers_2e1mu) )
-        DatasetsAndTriggers.append( ("SingleMuon", triggers_1mu_iso + triggers_1mu_iso_50ns + triggers_1mu_noniso) )
-        DatasetsAndTriggers.append( ("SingleElectron", triggers_1e + triggers_1e_50ns) )
+        #DatasetsAndTriggers.append( ("SingleMuon", triggers_1mu_iso + triggers_1mu_iso_50ns + triggers_1mu_noniso) )
+        #DatasetsAndTriggers.append( ("SingleElectron", triggers_1e + triggers_1e_50ns) )
 
         if False: # for fake rate measurements in data
             lepAna.loose_muon_dxy = 999
@@ -497,12 +504,10 @@ if doMETpreprocessor:
     #print " ".join(args)
     subprocess.call(args)
     from PhysicsTools.Heppy.utils.cmsswPreprocessor import CmsswPreprocessor
-    preprocessor = CmsswPreprocessor(preprocessorFile)#,prefetch=True) # prefetching input file for preprocessor
+    preprocessor = CmsswPreprocessor(preprocessorFile,prefetch=True) # prefetching input file for preprocessor
 
 
 #-------- HOW TO RUN -----------
-
-from PhysicsTools.HeppyCore.framework.heppy_loop import getHeppyOption
 test = getHeppyOption('test')
 if test == '1':
     comp = DYJetsToLL_M50_50ns
@@ -510,7 +515,7 @@ if test == '1':
     print comp.files
     comp.splitFactor = 1
     if not getHeppyOption('single'):
-        comp.fineSplitFactor = 4
+        comp.fineSplitFactor = 1
     selectedComponents = [ comp ]
 elif test == '125':
     comp = TTJets
@@ -647,3 +652,6 @@ config = cfg.Config( components = selectedComponents,
                      services = outputService, 
                      preprocessor = preprocessor, 
                      events_class = event_class)
+
+
+print "fetching option=", getHeppyOption("nofetch"), preprocessor.prefetch

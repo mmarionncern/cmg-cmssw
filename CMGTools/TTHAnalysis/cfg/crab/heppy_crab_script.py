@@ -28,6 +28,8 @@ JobNumber=sys.argv[1] # 1st crab argument is jobID
 job = int(JobNumber)
 # if one wants to include more options to be passed to the crab scriptExe add a corresponding argument below
 # crab only allows arguments of the type 'arg=value'
+globalOptions={}
+externalCommands={}
 for arg in sys.argv[2:]:
     if arg.split("=")[0] == "dataset":  # this argument is strictly necessary
         dataset = arg.split("=")[1]
@@ -39,9 +41,24 @@ for arg in sys.argv[2:]:
     elif arg.split("=")[0] == "useAAA":
         useAAA = not (arg.split("=")[1] == 'False') # 'True' by default
         if useAAA: print "chosen to run via xrootd"
+    elif "-glob--" in arg :
+        opt=arg[7:]
+        globalOptions[ opt.split("=")[0] ]= opt.split("=")[1]
+    elif  "-ext--" in arg :
+        ext=arg[6:]
+        externalCommands[ ext.split(" ")[0] ]= ext.split(" ")[1]
 
 print "dataset:", dataset
 print "job", job , " out of", total
+
+print "global heppy options ==="
+import PhysicsTools.HeppyCore.framework.heppy_loop as heppy
+for opt in globalHeppyOptions:
+    heppy._heppyGlobalOptions[ opt ] = globalHeppyOptions[ opt ]
+    print opt," =>> ", globalHeppyOptions[ opt ]
+print "========================"
+#heppy._heppyGlobalOptions["test"]='1'
+#heppy._heppyGlobalOptions["nofetch"]=True
 
 # fetch config file
 import imp
@@ -87,8 +104,10 @@ looper.write()
 os.system("ls -lR") # for debugging
 
 # assign the right name
-os.rename("Output/treeProducerSusyMultilepton/tree.root", "tree.root")
-os.rename("Output/skimAnalyzerCount/SkimReport.pck", "SkimReport.pck")
+for ext in externalCommands:
+    os.rename( ext, externalCommands[ext] )
+#os.rename("Output/treeProducerSusyMultilepton/tree.root", "tree.root")
+#os.rename("Output/skimAnalyzerCount/SkimReport.pck", "SkimReport.pck")
 
 # print in crab log file the content of the job log files, so one can see it from 'crab getlog'
 print "-"*25
@@ -102,7 +121,7 @@ os.system("tar czf output.log.tgz Output/")
 
 
 import ROOT
-f=ROOT.TFile.Open('tree.root')
+f=ROOT.TFile.Open('Output/treeProducerSusyMultilepton/tree.root')
 entries=f.Get('tree').GetEntries()
 f.Close()
 

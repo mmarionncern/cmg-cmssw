@@ -14,7 +14,14 @@ os.system("tar czf python.tar.gz --dereference --directory $CMSSW_BASE python")
 os.system("tar czf cmgdataset.tar.gz --directory $HOME .cmgdataset")
 os.system("tar czf cafpython.tar.gz --directory /afs/cern.ch/cms/caf/ python")
 config.JobType.inputFiles = ['FrameworkJobReport.xml','heppy_config.py','heppy_crab_script.py','cmgdataset.tar.gz', 'python.tar.gz', 'cafpython.tar.gz']
-config.JobType.outputFiles = ['SkimReport.pck', 'output.log.tgz'] # tree.root is automatically send because of the pset file
+if "JSON" in os.environ:
+    config.JobType.inputFiles.append( os.environ["JSON"] )
+
+output_files=os.environ["OUTPUTFILES"].split(" ")[:-1]
+config.JobType.outputFiles = output_files
+#[ 'output.log.tgz'] 
+# tree.root is automatically send because of the pset file 'SkimReport.pck',
+config.JobType.disableAutomaticOutputCollection = True
 
 config.section_("Data")
 config.Data.inputDBS = 'global'

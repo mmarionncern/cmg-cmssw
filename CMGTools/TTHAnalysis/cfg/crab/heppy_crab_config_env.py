@@ -14,6 +14,11 @@ production_label = os.environ["PROD_LABEL"]
 cmg_version = os.environ["CMG_VERSION"]
 debug  = os.environ["DEBUG"] == 'True'
 useAAA = os.environ["USEAAA"] == 'True'
+#tmp_options = os.environ["GLOBAL"].split(" ")
+global_heppy_options = os.environ["GLOBAL"].split(" ")[:-1]
+#tmp_ext = os.environ["EXTERNAL"].split(" ")
+external_commands = os.environ["EXTERNAL"].split(" ")[:-1]
+
 
 if debug:
     NJOBS = 4
@@ -29,7 +34,7 @@ config.Data.unitsPerJob = 10
 config.Data.totalUnits = config.Data.unitsPerJob * NJOBS
 
 # arguments to pass to scriptExe. They have to be like "arg=value". 
-config.JobType.scriptArgs = ["dataset="+dataset, "total="+str(NJOBS), "useAAA="+str(useAAA)]
+config.JobType.scriptArgs = ["dataset="+dataset, "total="+str(NJOBS), "useAAA="+str(useAAA) ] + global_heppy_options + external_commands
 
 # output will be .../$outLFN/$PRIMARY_DS/$PUBLISH_NAME/$TIMESTAMP/$COUNTER/$FILENAME
 # https://twiki.cern.ch/twiki/bin/view/CMSPublic/Crab3DataHandling

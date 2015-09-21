@@ -3,6 +3,8 @@ tar xzf cmgdataset.tar.gz --directory $HOME
 tar xzf python.tar.gz --directory $CMSSW_BASE
 tar xzf cafpython.tar.gz --directory $CMSSW_BASE
 
+cp /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt .
+
 # uncomment for debuging purposes
 #ls -lR .
 #echo "ARGS:"
