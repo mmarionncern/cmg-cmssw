@@ -98,9 +98,9 @@ MODULES.append ( ('leptonFakeRateFO4InSitu', ObjTagger('FO4InSitu','LepGood',
                 lambda lep : lep.sip3d>=4,
             ]) ) )
 
-#from CMGTools.TTHAnalysis.tools.vertexWeightFriend import VertexWeightFriend
-#pufile="../path/to/nvtx/file.root"
-#MODULES.append ( ('puWeights', VertexWeightFriend(pufile,pufile,"nvtx_signal","nvtx_data",verbose=True) ) )
+from CMGTools.TTHAnalysis.tools.vertexWeightFriend import VertexWeightFriend
+pufile="../python/plotter/susy-multilepton/for-pu-rew/pu_plots/zjets-4-nvtx_plots.root" #"../path/to/nvtx/file.root"
+MODULES.append ( ('puWeights', VertexWeightFriend(pufile,pufile,"nvtx_signal","nvtx_data",verbose=True) ) )
 
 
 from CMGTools.TTHAnalysis.tools.objFloatCalc import ObjFloatCalc

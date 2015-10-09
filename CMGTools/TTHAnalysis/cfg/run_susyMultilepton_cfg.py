@@ -321,6 +321,10 @@ selectedComponents = [];
 #selectedComponents = [ SingleMu_742, MuEG_742, DoubleMu_742 ] ; is50ns = True
 ### 25 ns 74X MC samples
 #selectedComponents = [ TTJets, TTJets_LO, WJetsToLNu, DYJetsToLL_M10to50,  DYJetsToLL_M50,  ] + SingleTop + DiBosons + TTV + Higgs ; is50ns = False
+#selectedComponents = [DYJetsToLL_M10to50 ,TBar_tWch, TTHnobb, TTHnobb_mWCutfix_ch1, TTZToLLNuNu, TToLeptons_tch, T_tWch, WJetsToLNu, WWTo2L2Nu, WZTo3LNu, WZp8, ZZTo4L, ZZp8 ] ; is50ns = False
+selectedComponents = [ WJetsToLNu ]; is50ns = False
+for c in selectedComponents:
+     c.splitFactor = 1
 #selectedComponents = mcSamplesPriv ; is50ns = False
 ### 50 ns 74X MC samples
 #selectedComponents = [ DYJetsToLL_M10to50_50ns, DYJetsToLL_M50_50ns, TBar_tWch_50ns, TTJets_LO_50ns, TToLeptons_tch_50ns, T_tWch_50ns, WJetsToLNu_50ns, WWTo2L2Nu_50ns, WZp8_50ns, ZZp8_50ns, TTJets_50ns ] ; is50ns = True
@@ -421,7 +425,8 @@ if runData: # For running on data
         susyCoreSequence.remove(jsonAna)
 
 if runFRMC: # QCD
-    selectedComponents = QCD_MuX_50ns + QCD_ElX + [DYJetsToLL_M50_50ns, WJetsToLNu_50ns, TTJets_50ns]
+    #selectedComponents = QCD_MuX + QCD_ElX + [DYJetsToLL_M50, WJetsToLNu, TTJets]
+    selectedComponents = [QCD_Pt120to170_EMEnriched,QCD_Pt170to300_Mu5,QCD_Pt_170to250_bcToE,QCD_Pt_250toInf_bcToE]
     lepAna.loose_muon_dxy = 999
     lepAna.loose_electron_dxy = 999
     ttHLepSkim.minLeptons = 1
@@ -490,7 +495,7 @@ if doMETpreprocessor:
     if runData:
       extraArgs.append('--isData')
       if is50ns: GT= '74X_dataRun2_v2'
-      else: raise RuntimeError,'GT for 25ns data with 25nsV5 JEC is to be announced'
+      else: GT= '74X_dataRun2_v2' # raise RuntimeError,'GT for 25ns data with 25nsV5 JEC is to be announced'
     else:
       GT= '74X_mcRun2_startup_v2' if is50ns else '74X_mcRun2_asymptotic_v2'
     if removeResiduals: extraArgs.append('--removeResiduals')

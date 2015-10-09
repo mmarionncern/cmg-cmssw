@@ -79,7 +79,8 @@ class MCAnalysis:
                         if re.match(p+"$", pname): signal = True
             ## endif
             treename = extra["TreeName"] if "TreeName" in extra else options.tree 
-            rootfile = "%s/%s/%s/%s_tree.root" % (options.path, field[1].strip(), treename, treename)
+            rootfile = "%s/%s/%s/tree.root" % (options.path, field[1].strip(), treename)#, treename)
+            treename = "tree"
             if options.remotePath:
                 rootfile = "root:%s/%s/%s_tree.root" % (options.remotePath, field[1].strip(), treename)
             elif os.path.exists(rootfile+".url"): #(not os.path.exists(rootfile)) and :
