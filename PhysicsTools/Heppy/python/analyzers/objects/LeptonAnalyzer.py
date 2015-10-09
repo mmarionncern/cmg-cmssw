@@ -286,6 +286,18 @@ class LeptonAnalyzer( Analyzer ):
                 raise RuntimeError, "Unsupported mu_isoCorr name '" + str(self.cfg_ana.mu_isoCorr) +  "'! For now only 'rhoArea' and 'deltaBeta' are supported."
             mu.relIso03 = mu.absIso03/mu.pt()
             mu.relIso04 = mu.absIso04/mu.pt()
+            mu.ecalPFClIso = 0#mu.ecalPFClusterIso()
+            mu.hcalPFClIso = 0#mu.hcalPFClIso()
+            mu.trkIso = 0#mu.trkIso()
+
+        # Set ID variables
+        for mu in allmuons:
+            mu.sigmaieie=0
+            mu.dEtaIn=0
+            mu.dPhiIn=0
+            mu.fBrem=0
+
+
         return allmuons
 
     def makeAllElectrons(self, event):
@@ -383,6 +395,9 @@ class LeptonAnalyzer( Analyzer ):
                  raise RuntimeError, "Unsupported ele_isoCorr name '" + str(self.cfg_ana.ele_isoCorr) +  "'! For now only 'rhoArea' and 'deltaBeta' are supported."
             ele.relIso03 = ele.absIso03/ele.pt()
             ele.relIso04 = ele.absIso04/ele.pt()
+            ele.ecalPFClIso = ele.ecalPFClusterIso()
+            ele.hcalPFClIso = ele.hcalPFClusterIso()
+            ele.trkIso = ele.dr03TkSumPt()
 
         # Set tight MVA id
         for ele in allelectrons:
@@ -399,7 +414,13 @@ class LeptonAnalyzer( Analyzer ):
                  except RuntimeError:
                      raise RuntimeError, "Unsupported ele_tightId name '" + str(self.cfg_ana.ele_tightId) +  "'! For now only 'MVA' and 'Cuts_2012' are supported, in addition to what provided in Electron.py."
 
-        
+        # Set ID variables
+        for ele in allelectrons:
+            ele.sigmaieie=ele.full5x5_sigmaIetaIeta();
+            ele.dEtaIn=ele.deltaEtaSuperClusterTrackAtVtx()
+            ele.dPhiIn=ele.deltaPhiSuperClusterTrackAtVtx()
+            ele.fBrem=abs(1.0/ele.correctedEcalEnergy() - ele.physObj.eSuperClusterOverP()/ele.correctedEcalEnergy()) if ele.correctedEcalEnergy()>0. else 9e9
+
         return allelectrons 
 
     def attachMiniIsolation(self, mu):

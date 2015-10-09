@@ -526,12 +526,12 @@ if doMETpreprocessor:
 
 test = getHeppyOption('test')
 if test == '1':
-    comp = DYJetsToLL_M50_50ns
-    if not is50ns: raise RuntimeError, 'Incorrect is50ns configuration'
+    comp = DYJetsToLL_M50
+ #   if not is50ns: raise RuntimeError, 'Incorrect is50ns configuration'
     comp.files = comp.files[:1]
     comp.splitFactor = 1
-    if not getHeppyOption('single'):
-        comp.fineSplitFactor = 4
+   # if not getHeppyOption('single'):
+    #    comp.fineSplitFactor = 4
     selectedComponents = [ comp ]
 elif test == '125':
     comp = TTJets
