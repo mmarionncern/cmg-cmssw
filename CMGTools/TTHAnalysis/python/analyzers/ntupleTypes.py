@@ -73,16 +73,11 @@ leptonTypeSusyExtra = NTupleObjectType("leptonSusyExtra", baseObjectTypes = [ le
     NTupleVariable("jetCorrFactor_L1L2L3Res", lambda x: x.jet.CorrFactor_L1L2L3Res if hasattr(x.jet,'CorrFactor_L1L2L3Res') else 1, help="matched jet L1L2L3Res correction factor"),        
     NTupleVariable("jetPtRatio_Raw", lambda lepton : -1 if not hasattr(lepton,'jet') else lepton.pt()/lepton.jet.pt() if not hasattr(lepton.jet,'rawFactor') else lepton.pt()/(lepton.jet.pt()*lepton.jet.rawFactor()), help="pt(lepton)/rawpt(nearest jet)"),
     NTupleVariable("jetPtRelHv2", lambda lepton : ptRelHv2(lepton) if hasattr(lepton,'jet') else -1, help="pt of the jet (subtracting the lepton) transverse to the lepton axis - v2"),
-
-    #dummy isolation variables
-    NTupleVariable("ecalPFClIso", lambda x : x.ecalPFClIso, help="Ecal PFCluster isolation, dR=0.3" ) ,
-    NTupleVariable("hcalPFClIso", lambda x : x.hcalPFClIso, help="Hcal PFCluster isolation, dR=0.3" ),
-    NTupleVariable("trkIso", lambda x : x.trkIso, help="tracking isolation, dR=0.3" ),
-    #dummy ID variables
-    #NTupleVariable("sigmaieie",lambda x : x.sigmaieie, help="sigmaIEtaIEta variable"),
-    #NTupleVariable("dEtaIn",lambda x : x.dEtaIn, help="dEtaIn variable"),
-    #NTupleVariable("dPhiIn",lambda x : x.dPhiIn, help="dPhiIn variable"),
-    #NTupleVariable("fBrem",lambda x : x.fBrem, help="fBrem variable"),
+    # variables for isolated electron trigger matching cuts
+    NTupleVariable("ecalPFClusterIso", lambda lepton :  lepton.ecalPFClusterIso() if abs(lepton.pdgId())==11 else -999, help="Electron ecalPFClusterIso"),
+    NTupleVariable("hcalPFClusterIso", lambda lepton :  lepton.hcalPFClusterIso() if abs(lepton.pdgId())==11 else -999, help="Electron hcalPFClusterIso"),
+    NTupleVariable("dr03TkSumPt", lambda lepton: lepton.dr03TkSumPt() if abs(lepton.pdgId())==11 else -999, help="Electron dr03TkSumPt isolation"),
+    NTupleVariable("trackIso", lambda lepton :  lepton.trackIso() if abs(lepton.pdgId())==11 else -999, help="Electron trackIso (in cone of 0.4)"),
 
 ])
 leptonTypeSusyExtra.addSubObjects([
