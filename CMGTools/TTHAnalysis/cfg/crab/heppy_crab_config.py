@@ -22,4 +22,4 @@ config.Data.outLFNDirBase = '/store/user/' + os.environ["USER"]
 config.Data.publication = False
 
 config.section_("Site")
-
+config.Site.blacklist = ['T2_UA_KIPT']

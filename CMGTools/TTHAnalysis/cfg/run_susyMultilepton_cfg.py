@@ -22,9 +22,9 @@ SOS = getHeppyOption("SOS",False) ## switch True to overwrite settings for SOS s
 saveSuperClusterVariables = getHeppyOption("saveSuperClusterVariables",False)
 removeJetReCalibration = getHeppyOption("removeJetReCalibration",False)
 doMETpreprocessor = getHeppyOption("doMETpreprocessor",False)
-doT1METCorr = getHeppyOption("doT1METCorr",False)
-old74XMiniAODs  = (getHeppyOption("old74XMiniAODs", not runData) != "False")
-noMETNoHF = getHeppyOption("noMETNoHF",False)
+doT1METCorr = getHeppyOption("doT1METCorr",True)
+old74XMiniAODs  = False #(getHeppyOption("old74XMiniAODs", not runData) != "False")
+noMETNoHF = getHeppyOption("noMETNoHF",True)
 doAK4PFCHSchargedJets = getHeppyOption("doAK4PFCHSchargedJets",False)
 forcedSplitFactor = getHeppyOption("splitFactor",-1)
 forcedFineSplitFactor = getHeppyOption("fineSplitFactor",-1)
@@ -331,9 +331,9 @@ selectedComponents = [];
 ### 25 ns 74X MC samples
 #selectedComponents = [ TTJets, TTJets_LO, WJetsToLNu, DYJetsToLL_M10to50,  DYJetsToLL_M50,  ] + SingleTop + DiBosons + TTV + Higgs ; is50ns = False
 #selectedComponents = [DYJetsToLL_M10to50 ,TBar_tWch, TTHnobb, TTHnobb_mWCutfix_ch1, TTZToLLNuNu, TToLeptons_tch, T_tWch, WJetsToLNu, WWTo2L2Nu, WZTo3LNu, WZp8, ZZTo4L, ZZp8 ] ; is50ns = False
-selectedComponents = [ WJetsToLNu ]; is50ns = False
-for c in selectedComponents:
-     c.splitFactor = 1
+#selectedComponents = [ DYJetsToLL_M50, WJetsToLNu ]; is50ns = False
+#for c in selectedComponents:
+#     c.splitFactor = 1
 #selectedComponents = mcSamplesPriv ; is50ns = False
 ### 50 ns 74X MC samples
 #selectedComponents = [ DYJetsToLL_M10to50_50ns, DYJetsToLL_M50_50ns, TBar_tWch_50ns, TTJets_LO_50ns, TToLeptons_tch_50ns, T_tWch_50ns, WJetsToLNu_50ns, WWTo2L2Nu_50ns, WZp8_50ns, ZZp8_50ns, TTJets_50ns ] ; is50ns = True
@@ -352,7 +352,7 @@ if scaleProdToLumi>0: # select only a subset of a sample, corresponding to a giv
         c.splitFactor = len(c.files)
         c.fineSplitFactor = 1
 
-
+json=''
 if runData and not isTest: # For running on data
 
 #    # low-PU 50ns run (251721)
@@ -372,8 +372,8 @@ if runData and not isTest: # For running on data
 
     # Run2015D, fills 4376-4426 - WARNING: beware of CACHING in .cmgdataset
     # normalize with: brilcalc lumi --normtag /afs/cern.ch/user/c/cmsbril/public/normtag_json/OfflineNormtagV1.json -i jsonfile.txt
-    json = os.environ['CMSSW_BASE']+'/src/CMGTools/TTHAnalysis/data/json/Cert_246908-257599_13TeV_PromptReco_Collisions15_25ns_JSON.txt' # and Run2015D = 209.2/pb
-    processing = "Run2015D-PromptReco-v3"; short = "Run2015D_v3"; run_ranges = [ (256630,257599) ]; useAAA=False; is50ns=False
+    json = os.environ['CMSSW_BASE']+'/src/CMGTools/TTHAnalysis/data/json/Cert_246908-258159_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt' # and Run2015D = 209.2/pb
+    processing = "Run2015D-PromptReco-v3"; short = "Run2015D_v3"; run_ranges = [ (256630,258159) ]; useAAA=False; is50ns=False
 
     compSelection = ""; compVeto = ""
     DatasetsAndTriggers = []
@@ -434,8 +434,8 @@ if runData and not isTest: # For running on data
         susyCoreSequence.remove(jsonAna)
 
 if runFRMC: # QCD
-    #selectedComponents = QCD_MuX + QCD_ElX + [DYJetsToLL_M50, WJetsToLNu, TTJets]
-    selectedComponents = [QCD_Pt120to170_EMEnriched,QCD_Pt170to300_Mu5,QCD_Pt_170to250_bcToE,QCD_Pt_250toInf_bcToE]
+    selectedComponents = QCD_MuX + QCD_ElX + [DYJetsToLL_M50, WJetsToLNu, TTJets]
+    #selectedComponents = [QCD_Pt120to170_EMEnriched,QCD_Pt170to300_Mu5,QCD_Pt_170to250_bcToE,QCD_Pt_250toInf_bcToE]
     lepAna.loose_muon_dxy = 999
     lepAna.loose_electron_dxy = 999
     ttHLepSkim.minLeptons = 1
@@ -540,11 +540,24 @@ if doMETpreprocessor:
 
 test = getHeppyOption('test')
 if test == '1':
-    comp = selectedComponents[0]
-    comp.files = comp.files[:1]
-    comp.splitFactor = 1
-    comp.fineSplitFactor = 1
-    selectedComponents = [ comp ]
+    ttHLepSkim.minLeptons = 1
+    #comp = kreator.makePrivateDataComponent('Test','/store/data/Run2015D/DoubleEG/MINIAOD/PromptReco-v3/000/256/677/00000/',['2EC6F8F9-865F-E511-BADD-02163E0120AC.root'],json)
+  #  comp1 = kreator.makePrivateDataComponent('DoubleMu','/store/data/Run2015D/DoubleMuon/MINIAOD/PromptReco-v3/000/257/531/00000',['B26DC190-8166-E511-AE66-02163E0133A7.root'],json)
+  #  comp2 = kreator.makePrivateDataComponent('DoubleEG','/store/data/Run2015D/DoubleEG/MINIAOD/PromptReco-v3/000/257/531/00000',['B26DC190-8166-E511-AE66-02163E0133A7.root'],json)
+  #  comp3 = kreator.makePrivateDataComponent('MuEG','/store/data/Run2015D/MuonEG/MINIAOD/PromptReco-v3/000/257/531/00000',['B26DC190-8166-E511-AE66-02163E0133A7.root'],json)
+   # comp4 = kreator.makePrivateMCComponent('TTW','/store/mc/RunIISpring15DR74/TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/30000/',['60087A61-9134-E511-B0C6-0025905B855E.root '])
+    comp4 = kreator.makePrivateMCComponent('TTW','/store/mc/RunIISpring15MiniAODv2/TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/10000/',['3A2285C7-CA6D-E511-B68F-0CC47A13D09C.root'])
+
+   # comp1.splitFactor = 1
+  #  comp2.splitFactor = 1
+ #   comp3.splitFactor = 1
+    comp4.splitFactor = 5
+
+    #comp = selectedComponents[0]
+    #comp.files = comp.files[:1]
+    #comp.splitFactor = 1
+    #comp.fineSplitFactor = 1
+    selectedComponents = [ comp4 ] #, comp2, comp3 ] #, comp4 ]
 elif test == '2':
     for comp in selectedComponents:
         comp.files = comp.files[:1]

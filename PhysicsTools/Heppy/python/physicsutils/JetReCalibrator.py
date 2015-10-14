@@ -157,6 +157,7 @@ class Type1METCorrector:
            old74XMiniAODs should be True if using inputs produced with CMSSW_7_4_11 or earlier."""
         self.oldMC = old74XMiniAODs
     def correct(self,met,type1METCorrections):
+        #print "blo 1", self.oldMC
         oldpx, oldpy = met.px(), met.py()
         #print "old met: px %+10.5f, py %+10.5f" % (oldpx, oldpy)
         if self.oldMC:
@@ -165,21 +166,26 @@ class Type1METCorrector:
         else:
             raw = met.uncorP2()
             rawsumet =  met.uncorSumEt();
+        #print "blo 2"
         rawpx, rawpy = raw.px, raw.py
         #print "raw met: px %+10.5f, py %+10.5f" % (rawpx, rawpy)
         corrpx = rawpx + type1METCorrections[0]
         corrpy = rawpy + type1METCorrections[1]
         corrsumet = rawsumet  + type1METCorrections[2]
+        #print "blo 3"
         #print "done met: px %+10.5f, py %+10.5f\n" % (corrpx,corrpy)
         met.setP4(ROOT.reco.Particle.LorentzVector(corrpx,corrpy,0,hypot(corrpx,corrpy)))
         ## workaround for missing setSumEt in reco::MET and pat::MET
+        #print "blo 4"
         met._sumEt = corrsumet
         met.sumEt = types.MethodType(lambda myself : myself._sumEt, met, met.__class__) 
+        #print "blo 5"
         if not self.oldMC:
             met.setCorShift(rawpx, rawpy, rawsumet, met.Raw)
         else: 
             # to avoid segfauls in pat::MET, I need a more ugly solution
             setFakeRawMETOnOldMiniAODs(met, rawpx,rawpy, rawsumet)
+        #print "blo 6"
 
 def setFakeRawMETOnOldMiniAODs(met, rawpx, rawpy, rawsumet):
         met._rawSumEt = rawsumet

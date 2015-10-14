@@ -79,10 +79,10 @@ leptonTypeSusyExtra = NTupleObjectType("leptonSusyExtra", baseObjectTypes = [ le
     NTupleVariable("hcalPFClIso", lambda x : x.hcalPFClIso, help="Hcal PFCluster isolation, dR=0.3" ),
     NTupleVariable("trkIso", lambda x : x.trkIso, help="tracking isolation, dR=0.3" ),
     #dummy ID variables
-    NTupleVariable("sigmaieie",lambda x : x.sigmaieie, help="sigmaIEtaIEta variable"),
-    NTupleVariable("dEtaIn",lambda x : x.dEtaIn, help="dEtaIn variable"),
-    NTupleVariable("dPhiIn",lambda x : x.dPhiIn, help="dPhiIn variable"),
-    NTupleVariable("fBrem",lambda x : x.fBrem, help="fBrem variable"),
+    #NTupleVariable("sigmaieie",lambda x : x.sigmaieie, help="sigmaIEtaIEta variable"),
+    #NTupleVariable("dEtaIn",lambda x : x.dEtaIn, help="dEtaIn variable"),
+    #NTupleVariable("dPhiIn",lambda x : x.dPhiIn, help="dPhiIn variable"),
+    #NTupleVariable("fBrem",lambda x : x.fBrem, help="fBrem variable"),
 
 ])
 leptonTypeSusyExtra.addSubObjects([

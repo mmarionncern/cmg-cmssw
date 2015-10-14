@@ -183,18 +183,22 @@ class METAnalyzer( Analyzer ):
         else:
           self.met = self.handles['met'].product()[0]
           if self.cfg_ana.doMetNoPU: self.metNoPU = self.handles['nopumet'].product()[0]
-
+        #print 'coin 1'
         if self.recalibrateMET == "type1":
-          type1METCorr = getattr(event, 'type1METCorr'+self.jetAnalyzerPostFix)
-          self.type1METCorrector.correct(self.met, type1METCorr)
+          #  print 'piou 1'
+            type1METCorr = getattr(event, 'type1METCorr'+self.jetAnalyzerPostFix)
+           # print 'bli 1'
+            self.type1METCorrector.correct(self.met, type1METCorr)
+            #print 'bli 2'
         elif self.recalibrateMET == True:
-          deltaMetJEC = getattr(event, 'deltaMetFromJEC'+self.jetAnalyzerPostFix)
-          self.applyDeltaMet(self.met, deltaMetJEC)
+            #print 'piou 2'
+            deltaMetJEC = getattr(event, 'deltaMetFromJEC'+self.jetAnalyzerPostFix)
+            self.applyDeltaMet(self.met, deltaMetJEC)
         if self.applyJetSmearing:
           deltaMetSmear = getattr(event, 'deltaMetFromJetSmearing'+self.jetAnalyzerPostFix)
           self.applyDeltaMet(self.met, deltaMetSmear)
 
-
+        #print 'coin 2'
         #Shifted METs: to be re-enabled after updates to MiniAOD pass 2
         #Uncertainties defined in https://github.com/cms-sw/cmssw/blob/CMSSW_7_2_X/DataFormats/PatCandidates/interface/MET.h#L168
         #event.met_shifted = []
@@ -209,14 +213,14 @@ class METAnalyzer( Analyzer ):
 
         self.met_sig = self.met.significance()
         self.met_sumet = self.met.sumEt()
-
+       # print 'coin 3'
         if self.old74XMiniAODs and self.recalibrateMET != "type1":
            oldraw = self.met.shiftedP2_74x(12,0);
            setFakeRawMETOnOldMiniAODs( self.met, px, py, self.met.shiftedSumEt_74x(12,0) )
         else:
            px, py = self.met.uncorPx(), self.met.uncorPy()
         self.met_raw = ROOT.reco.Particle.LorentzVector(px,py,0,math.hypot(px,py))
-
+        #print 'coin 4'
         if hasattr(event,'zll_p4'):
             self.adduParaPerp(self.met,event.zll_p4,"_zll")
             self.adduParaPerp(self.met_raw, event.zll_p4,"_zll")
@@ -229,7 +233,7 @@ class METAnalyzer( Analyzer ):
         if self.cfg_ana.doMetNoPU: setattr(event, "metNoPU"+self.cfg_ana.collectionPostFix, self.metNoPU)
         setattr(event, "met_sig"+self.cfg_ana.collectionPostFix, self.met_sig)
         setattr(event, "met_sumet"+self.cfg_ana.collectionPostFix, self.met_sumet)
-
+        #print 'coin 5'
         genMET = self.met.genMET()
         if genMET:
           setattr(event, "met_genPt"+self.cfg_ana.collectionPostFix, genMET.pt())
