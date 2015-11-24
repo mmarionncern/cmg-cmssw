@@ -15,12 +15,14 @@ class TriggerBitAnalyzer( Analyzer ):
         self.outprefix   = getattr(self.cfg_ana,"outprefix",  self.processName)
         self.unrollbits = ( hasattr(self.cfg_ana,"unrollbits") and self.cfg_ana.unrollbits )
         self.saveIsUnprescaled = getattr(self.cfg_ana,"saveIsUnprescaled",False)
+        self.savePrescale = getattr(self.cfg_ana,"savePrescale",False)
         self.checkL1prescale = getattr(self.cfg_ana,"checkL1prescale",False)
         self.force1prescale = False
         if self.cfg_comp.isMC and self.saveIsUnprescaled:
             print 'Cannot save prescale information in MC: will put everything to unprescaled'
             self.saveIsUnprescaled = False
             self.checkL1prescale = False
+            self.savePrescale = False
             self.force1prescale = True
 
     def declareHandles(self):
@@ -28,9 +30,9 @@ class TriggerBitAnalyzer( Analyzer ):
         fallback = ('TriggerResults','',self.fallbackName) if self.fallbackName else None
         prescaleFallback = ('patTrigger','',self.prescaleFallbackName) if self.prescaleFallbackName else None
         self.handles['TriggerResults'] = AutoHandle( ('TriggerResults','',self.processName), 'edm::TriggerResults', fallbackLabel=fallback )
-        if self.saveIsUnprescaled:
+        if self.saveIsUnprescaled or self.savePrescale:
             self.handles["TriggerPrescales"] = AutoHandle( ('patTrigger','',self.prescaleProcessName), 'pat::PackedTriggerPrescales', fallbackLabel=prescaleFallback )
-            if self.checkL1prescale:
+            if self.checkL1prescale or self.savePrescale:
                 self.handles["TriggerPrescales_l1min"] = AutoHandle( ('patTrigger','l1min',self.prescaleProcessName), 'pat::PackedTriggerPrescales', fallbackLabel=(('patTrigger','l1min',self.prescaleFallbackName) if self.prescaleFallbackName else None) )
                 self.handles["TriggerPrescales_l1max"] = AutoHandle( ('patTrigger','l1max',self.prescaleProcessName), 'pat::PackedTriggerPrescales', fallbackLabel=(('patTrigger','l1max',self.prescaleFallbackName) if self.prescaleFallbackName else None) )
 
@@ -57,6 +59,10 @@ class TriggerBitAnalyzer( Analyzer ):
                                 outname=outname[0:-1]
                             setup.globalVariables.append( NTupleVariable(outname, eval("lambda ev: ev.%s" % outname), help="Trigger bit  %s"%TP) )
                             if self.saveIsUnprescaled or self.force1prescale: setup.globalVariables.append( NTupleVariable(outname+'_isUnprescaled', eval("lambda ev: ev.%s_isUnprescaled" % outname), help="Trigger bit  %s isUnprescaled flag"%TP) )
+                            if self.savePrescale : 
+                                setup.globalVariables.append( NTupleVariable(outname+'_prescaleHLT', eval("lambda ev: ev.%s_prescaleHLT" % outname), help="HLT %s prescale value"%TP) )                                                         
+                                setup.globalVariables.append( NTupleVariable(outname+'_prescaleL1Min', eval("lambda ev: ev.%s_prescaleL1Min" % outname), help="L1 min %s prescale value"%TP) )
+                                setup.globalVariables.append( NTupleVariable(outname+'_prescaleL1Max', eval("lambda ev: ev.%s_prescaleL1Max" % outname), help="L1 max %s prescale value"%TP) )
                             self.triggerBitCheckersSingleBits.append( (TP, ROOT.heppy.TriggerBitChecker(trigVecBit)) )
 
                 outname="%s_%s"%(self.outprefix,T)  
@@ -70,9 +76,9 @@ class TriggerBitAnalyzer( Analyzer ):
     def process(self, event):
         self.readCollections( event.input )
         triggerResults = self.handles['TriggerResults'].product()
-        if self.saveIsUnprescaled:
-            triggerPrescales = self.handles["TriggerPrescales"].product()
-            if self.checkL1prescale:
+        if self.saveIsUnprescaled or self.savePrescale:
+            triggerPrescales = self.handles["TriggerPrescales"].product()            
+            if self.checkL1prescale or self.savePrescale:
                 triggerPrescales_min = self.handles["TriggerPrescales_l1min"].product()
                 triggerPrescales_max = self.handles["TriggerPrescales_l1max"].product()
         for T,TC in self.triggerBitCheckers:
@@ -93,10 +99,19 @@ class TriggerBitAnalyzer( Analyzer ):
                setattr(event,outname, TC.check(event.input.object(), triggerResults))
                if self.saveIsUnprescaled:
                    unpr =  TC.check_unprescaled(event.input.object(), triggerResults, triggerPrescales)
-                   if self.checkL1prescale:
+                   if self.savePrescale:
+                       hltPr = TC.getPrescale(event.input.object(), triggerResults, triggerPrescales)
+                       setattr(event,outname+'_prescaleHLT', hltPr) 
+                       l1MinPr = TC.getPrescale(event.input.object(), triggerResults, triggerPrescales_min)
+                       l1MaxPr = TC.getPrescale(event.input.object(), triggerResults, triggerPrescales_max)
+                       #print l1MinPr, l1MaxPr
+                       setattr(event,outname+'_prescaleL1Min', l1MinPr) 
+                       setattr(event,outname+'_prescaleL1Max', l1MaxPr) 
+
                        unpr = unpr and TC.check_unprescaled(event.input.object(), triggerResults, triggerPrescales_min)
                        unpr = unpr and TC.check_unprescaled(event.input.object(), triggerResults, triggerPrescales_max)
                    setattr(event,outname+'_isUnprescaled', unpr) 
+                      
                if self.force1prescale: setattr(event,outname+'_isUnprescaled', True)
 
         return True

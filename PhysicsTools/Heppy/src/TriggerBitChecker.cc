@@ -2,6 +2,8 @@
 
 #include "FWCore/Common/interface/TriggerNames.h"
 
+#include <iostream>
+
 namespace heppy {
 
 TriggerBitChecker::TriggerBitChecker(const std::string &path) : paths_(1,returnPathStruct(path)), lastRun_(0) { rmstar(); }
@@ -37,6 +39,17 @@ bool TriggerBitChecker::check_unprescaled(const edm::EventBase &event, const edm
     }
     return outcome; // true only if all paths are unprescaled
 }
+
+float TriggerBitChecker::getPrescale(const edm::EventBase &event, const edm::TriggerResults &result_tr, const pat::PackedTriggerPrescales &result) const {
+  //const edm::TriggerNames &names = event.triggerNames(result);
+    if (event.id().run() != lastRun_) { syncIndices(event, result_tr); lastRun_ = event.id().run(); }
+    float outcome = 1;
+    for (std::vector<unsigned int>::const_iterator it = indices_.begin(), ed = indices_.end(); it != ed; ++it) {
+      outcome=result.getPrescaleForIndex(*it);
+    }
+    return outcome;
+}
+
 
 void TriggerBitChecker::syncIndices(const edm::EventBase &event, const edm::TriggerResults &result) const {
     indices_.clear();

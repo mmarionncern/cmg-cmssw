@@ -25,6 +25,8 @@ class TriggerBitChecker {
 
         bool check(const edm::EventBase &event, const edm::TriggerResults &result) const ;
         bool check_unprescaled(const edm::EventBase &event, const edm::TriggerResults &result_tr, const pat::PackedTriggerPrescales &result) const ;
+
+	float getPrescale(const edm::EventBase &event, const edm::TriggerResults &result_tr, const pat::PackedTriggerPrescales &result) const;
         
     private:
         // list of path name prefixes

@@ -23,7 +23,7 @@ saveSuperClusterVariables = getHeppyOption("saveSuperClusterVariables",False)
 removeJetReCalibration = getHeppyOption("removeJetReCalibration",False)
 doMETpreprocessor = getHeppyOption("doMETpreprocessor",False)
 doT1METCorr = getHeppyOption("doT1METCorr",True)
-old74XMiniAODs  = False #(getHeppyOption("old74XMiniAODs", not runData) != "False")
+old74XMiniAODs  = getHeppyOption("old74XMiniAODs", False)
 noMETNoHF = getHeppyOption("noMETNoHF",True)
 doAK4PFCHSchargedJets = getHeppyOption("doAK4PFCHSchargedJets",False)
 forcedSplitFactor = getHeppyOption("splitFactor",-1)
@@ -44,7 +44,7 @@ lepAna.miniIsolationVetoLeptons = None # use 'inclusive' to veto inclusive lepto
 lepAna.doIsolationScan = False
 
 # Lepton Preselection
-lepAna.loose_electron_id = "POG_MVA_ID_Run2_NonTrig_VLooseIdEmu"
+lepAna.loose_electron_id = "POG_MVA_ID_Spring15_NonTrig_VLooseIdEmu"
 isolation = "miniIso"
 
 if SOS == True:
@@ -318,6 +318,7 @@ triggerFlagsAna.triggerBits = {
 triggerFlagsAna.unrollbits = True
 triggerFlagsAna.saveIsUnprescaled = True
 triggerFlagsAna.checkL1Prescale = True
+triggerFlagsAna.savePrescale = True
 
 from CMGTools.RootTools.samples.samples_13TeV_74X import *
 from CMGTools.RootTools.samples.samples_13TeV_74X_susySignalsPriv import *
@@ -339,6 +340,8 @@ selectedComponents = [];
 #selectedComponents = [ DYJetsToLL_M10to50_50ns, DYJetsToLL_M50_50ns, TBar_tWch_50ns, TTJets_LO_50ns, TToLeptons_tch_50ns, T_tWch_50ns, WJetsToLNu_50ns, WWTo2L2Nu_50ns, WZp8_50ns, ZZp8_50ns, TTJets_50ns ] ; is50ns = True
 #selectedComponents = [ TT_pow_50ns ] ; is50ns = True
 #selectedComponents = [ DYJetsToLL_LO_M50_50ns ] ; is50ns = True
+#TTWToLNuv2.splitFactor = len(TTWToLNuv2.files)
+#selectedComponents = [ TTWToLNuv2 ]
 
 
 if scaleProdToLumi>0: # select only a subset of a sample, corresponding to a given luminosity (assuming ~30k events per MiniAOD file, which is ok for central production)
@@ -372,8 +375,24 @@ if runData and not isTest: # For running on data
 
     # Run2015D, fills 4376-4426 - WARNING: beware of CACHING in .cmgdataset
     # normalize with: brilcalc lumi --normtag /afs/cern.ch/user/c/cmsbril/public/normtag_json/OfflineNormtagV1.json -i jsonfile.txt
-    json = os.environ['CMSSW_BASE']+'/src/CMGTools/TTHAnalysis/data/json/Cert_246908-258159_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt' # and Run2015D = 209.2/pb
-    processing = "Run2015D-PromptReco-v3"; short = "Run2015D_v3"; run_ranges = [ (256630,258159) ]; useAAA=False; is50ns=False
+    #json = os.environ['CMSSW_BASE']+'/src/CMGTools/TTHAnalysis/data/json/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt' # and Run2015D = 209.2/pb
+    #processing = "Run2015D-PromptReco-v3"; short = "Run2015D_v3"; run_ranges = [ (256630,258158) ]; useAAA=False; is50ns=False
+
+    
+    # Run2015C Oct05
+    #json = os.environ['CMSSW_BASE']+'/src/CMGTools/TTHAnalysis/data/json/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt' # and Run2015D = 209.2/pb
+    #processing = "Run2015C_25ns-05Oct2015-v1"; short = "Run2015C_Oct05"; run_ranges = [ (254231,254914) ]; useAAA=False; is50ns=False
+    #triggerFlagsAna.processName = 'PAT'
+
+    # Run2015D Oct05
+    #json = os.environ['CMSSW_BASE']+'/src/CMGTools/TTHAnalysis/data/json/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt' # and Run2015D = 209.2/pb
+    #processing = "Run2015D-05Oct2015-v1"; short = "Run2015D_Oct05"; run_ranges = [ (256630,258158) ]; useAAA=False; is50ns=False
+    #triggerFlagsAna.processName = 'PAT'
+
+    # Run2015D prompt
+    json = os.environ['CMSSW_BASE']+'/src/CMGTools/TTHAnalysis/data/json/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt' # and Run2015D = 209.2/pb
+    processing = "Run2015D-PromptReco-v4"; short = "Run2015D_v4"; run_ranges = [ (258159,260627) ]; useAAA=False; is50ns=False
+    
 
     compSelection = ""; compVeto = ""
     DatasetsAndTriggers = []
@@ -450,13 +469,16 @@ if runFRMC: # QCD
     treeProducer.collections = {
         "selectedLeptons" : NTupleCollection("LepGood",  leptonTypeSusyExtra, 8, help="Leptons after the preselection"),
         "cleanJets"       : NTupleCollection("Jet",     jetTypeSusy, 15, help="Cental jets after full selection and cleaning, sorted by pt"),
+        "discardedJets"    : NTupleCollection("DiscJet", jetTypeSusy, 15, help="Jets discarted in the jet-lepton cleaning"),
+        "discardedLeptons" : NTupleCollection("DiscLep", leptonTypeSusyExtra, 8, help="Leptons discarded in the jet-lepton cleaning"),
+        "otherLeptons"    : NTupleCollection("LepOther", leptonTypeSusyExtra, 8, help="Leptons after the preselection"),
     }
 
 if is50ns:
-    jetAna.mcGT     = "Summer15_50nsV5_MC"
-    jetAna.dataGT   = "Summer15_50nsV5_DATA"
-    pfChargedCHSjetAna.mcGT     = "Summer15_50nsV5_MC"
-    pfChargedCHSjetAna.dataGT   = "Summer15_50nsV5_DATA"
+    jetAna.mcGT     = "Summer15_50nsV6_MC"
+    jetAna.dataGT   = "Summer15_50nsV6_DATA"
+    pfChargedCHSjetAna.mcGT     = "Summer15_50nsV6_MC"
+    pfChargedCHSjetAna.dataGT   = "Summer15_50nsV6_DATA"
 
 if removeJetReCalibration:
     ## NOTE: jets will still be recalibrated, since calculateSeparateCorrections is True,
@@ -470,20 +492,23 @@ if forcedSplitFactor>0 or forcedFineSplitFactor>0:
         if forcedFineSplitFactor>0: c.fineSplitFactor = forcedFineSplitFactor
 
 #trigMatchExample = cfg.Analyzer(
-#    TriggerMatchAnalyzer, name="TriggerMatchAllObjects",
+#    TriggerMatchAnalyzer, name="TriggerMatchEle27",
 #    processName = 'PAT',
-#    label = 'dummyTrigMatch',
+#    label = 'Ele27_WP85_Gsf',
 #    unpackPathNames = True,
-#    trgObjSelectors = [lambda ob: ob.pt()>20, lambda ob: abs(ob.eta())<2.5],
+#    trgObjSelectors = [lambda ob: ob.pt()>20, lambda ob: abs(ob.eta())<2.5, lambda ob: len( [t for t in ob.pathNames(True) if re.match("HLT_Ele27_WP85_Gsf_v",t)] )>0 ],
 #    collToMatch = "selectedLeptons",
-#    collMatchSelectors = [lambda lep,ob: abs(lep.pt()/ob.pt()-1)<0.5],
+#    collMatchSelectors = [lambda lep,ob: abs(lep.pt()/ob.pt()-1)<0.5, lambda lep,ob: abs(lep.pdgId())==11],
 #    collMatchDRCut = 0.3,
 #    univoqueMatching = True,
-#    verbose = True
+#    verbose = False
 #)
 #susyCoreSequence.append(trigMatchExample)
+#leptonTypeSusyExtra.addVariables([
+#        NTupleVariable("matchedTrgObj_Ele27_WP85_Gsf_pt", lambda x: getattr(x,'matchedTrgObjEle27_WP85_Gsf').pt() if getattr(x,'matchedTrgObjEle27_WP85_Gsf',None) else -999, help="Electron trigger pt")
+#])
 
-    
+
 #-------- SEQUENCE -----------
 
 sequence = cfg.Sequence(susyCoreSequence+[
@@ -498,8 +523,8 @@ if doMETpreprocessor:
     import tempfile
     # -------------------- Running pre-processor
     import subprocess
-    if is50ns: jectag = '50nsV5'
-    else: jectag = '25nsV5' if runData else '25nsV2'
+    if is50ns: jectag = '50nsV6'
+    else: jectag = '25nsV6' if runData else '25nsV6'
     jecDBFile = '$CMSSW_BASE/src/CMGTools/RootTools/data/jec/Summer15_%s_%s.db'%(jectag,'DATA' if runData else 'MC')
     jecEra    = 'Summer15_%s_%s'%(jectag, 'DATA'if runData else 'MC')
     tempfile.tempdir=os.environ['CMSSW_BASE']+'/tmp'
@@ -546,7 +571,10 @@ if test == '1':
   #  comp2 = kreator.makePrivateDataComponent('DoubleEG','/store/data/Run2015D/DoubleEG/MINIAOD/PromptReco-v3/000/257/531/00000',['B26DC190-8166-E511-AE66-02163E0133A7.root'],json)
   #  comp3 = kreator.makePrivateDataComponent('MuEG','/store/data/Run2015D/MuonEG/MINIAOD/PromptReco-v3/000/257/531/00000',['B26DC190-8166-E511-AE66-02163E0133A7.root'],json)
    # comp4 = kreator.makePrivateMCComponent('TTW','/store/mc/RunIISpring15DR74/TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/30000/',['60087A61-9134-E511-B0C6-0025905B855E.root '])
-    comp4 = kreator.makePrivateMCComponent('TTW','/store/mc/RunIISpring15MiniAODv2/TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/10000/',['3A2285C7-CA6D-E511-B68F-0CC47A13D09C.root'])
+    #comp4 = kreator.makePrivateMCComponent('TTW','/store/mc/RunIISpring15MiniAODv2/TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/10000/',['3A2285C7-CA6D-E511-B68F-0CC47A13D09C.root'])
+    
+    #comp4 = kreator.makePrivateMCComponent('TTW','/TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM 
+
 
    # comp1.splitFactor = 1
   #  comp2.splitFactor = 1
@@ -676,6 +704,7 @@ elif test == "ra5-sync-mc":
     sequence.remove(jsonAna)
     if is50ns or runData: raise RuntimeError, 'Wrong configuration'
 elif test == "ra5-sync-mc-v2":
+#    comp = cfg.MCComponent( files = ["/data1/p/peruzzi/3A2285C7-CA6D-E511-B68F-0CC47A13D09C.root"], name="TTWv2_RA5_sync" )
     comp = cfg.MCComponent( files = ["root://eoscms.cern.ch//store/mc/RunIISpring15MiniAODv2/TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/10000/3A2285C7-CA6D-E511-B68F-0CC47A13D09C.root"], name="TTWv2_RA5_sync" )
     comp.triggers = []
     comp.splitFactor = 1
@@ -686,14 +715,64 @@ elif test == "ra5-sync-mc-v2":
 elif test == "ra5-sync-data":
     comp = cfg.DataComponent( files = [
             "root://eoscms.cern.ch//store/data/Run2015D/DoubleMuon/MINIAOD/PromptReco-v3/000/257/531/00000/B26DC190-8166-E511-AE66-02163E0133A7.root",
-            "root://eoscms.cern.ch//store/data/Run2015D/DoubleEG/MINIAOD/PromptReco-v3/000/257/531/00000/2CFA9A0A-0F66-E511-88FF-02163E013484.root",
-            "root://eoscms.cern.ch//store/data/Run2015D/MuonEG/MINIAOD/PromptReco-v3/000/257/531/00000/D62608D5-FB65-E511-B031-02163E0145C1.root",
+          #  "root://eoscms.cern.ch//store/data/Run2015D/DoubleEG/MINIAOD/PromptReco-v3/000/257/531/00000/2CFA9A0A-0F66-E511-88FF-02163E013484.root",
+          #  "root://eoscms.cern.ch//store/data/Run2015D/MuonEG/MINIAOD/PromptReco-v3/000/257/531/00000/D62608D5-FB65-E511-B031-02163E0145C1.root",
             ], name="data_RA5_sync", intLumi=1 )
     comp.triggers = []
     selectedComponents = [ comp ]
     comp.json = os.environ['CMSSW_BASE']+'/src/CMGTools/TTHAnalysis/data/json/Cert_246908-257599_13TeV_PromptReco_Collisions15_25ns_JSON.txt'
-    comp.triggers = triggers_mumu_iso + triggers_mumu_ss + triggers_mumu_ht + triggers_3mu + triggers_3mu_alt + triggers_ee + triggers_ee_ht + triggers_3e + triggers_mue + triggers_mue_ht + triggers_2mu1e + triggers_2e1mu
+    comp.triggers = triggers_FR_1mu_noiso + triggers_FR_1e_noiso + triggers_FR_1e_iso + triggers_mumu_iso
+    FRTrigs = triggers_FR_1mu_iso + triggers_FR_1mu_noiso + triggers_FR_1e_noiso + triggers_FR_1e_iso
+    for t in FRTrigs:
+        tShort = t.replace("HLT_","FR_").replace("_v*","")
+        triggerFlagsAna.triggerBits[tShort] = [ t ]
+        
+#triggers_mumu_iso + triggers_mumu_ss + triggers_mumu_ht + triggers_3mu + triggers_3mu_alt + triggers_ee + triggers_ee_ht + triggers_3e + triggers_mue + triggers_mue_ht + triggers_2mu1e + triggers_2e1mu
     if is50ns or (not runData): raise RuntimeError, 'Wrong configuration'
+
+elif test=="ra5-sync-1lep":
+    lepAna.loose_muon_dxy = 999
+    lepAna.loose_electron_dxy = 999
+    ttHLepSkim.minLeptons = 1
+    FRTrigs = triggers_FR_1mu_iso + triggers_FR_1mu_noiso + triggers_FR_1e_noiso + triggers_FR_1e_iso
+    for t in FRTrigs:
+        tShort = t.replace("HLT_","FR_").replace("_v*","")
+        triggerFlagsAna.triggerBits[tShort] = [ t ]
+        FRTrigs_mu = triggers_FR_1mu_iso + triggers_FR_1mu_noiso
+        FRTrigs_el = triggers_FR_1e_noiso + triggers_FR_1e_iso + triggers_FR_1e_b2g
+                    
+    compMu = cfg.DataComponent( files = [
+            "root://eoscms.cern.ch//store/data/Run2015D/DoubleMuon/MINIAOD/PromptReco-v3/000/257/531/00000/B26DC190-8166-E511-AE66-02163E0133A7.root",
+            "root://eoscms.cern.ch//store/data/Run2015D/DoubleMuon/MINIAOD/PromptReco-v3/000/257/599/00000/908F5705-8666-E511-8362-02163E01432A.root",
+            "root://eoscms.cern.ch//store/data/Run2015D/DoubleMuon/MINIAOD/PromptReco-v3/000/256/941/00000/10AA8DF0-0062-E511-B01C-02163E0146ED.root"             ], name="data_RA5_sync_mu", intLumi=1 )
+    compMu.triggers = FRTrigs
+    compMu.json = os.environ['CMSSW_BASE']+'/src/CMGTools/TTHAnalysis/data/json/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt'
+    compMu.splitFactor = 2
+
+    compEl = cfg.DataComponent( files = [
+
+    "root://eoscms.cern.ch//store/data/Run2015D/DoubleEG/MINIAOD/PromptReco-v3/000/257/531/00000/2CFA9A0A-0F66-E511-88FF-02163E013484.root",
+    "root://eoscms.cern.ch//store/data/Run2015D/DoubleEG/MINIAOD/PromptReco-v3/000/257/599/00000/4EF0C7A4-8E66-E511-AF95-02163E011C53.root",
+    "root://eoscms.cern.ch//store/data/Run2015D/DoubleEG/MINIAOD/PromptReco-v3/000/256/941/00000/5A9CB350-3462-E511-A04D-02163E014393.root ",
+           ], name="data_RA5_sync_el", intLumi=1 )
+    compEl.triggers = FRTrigs
+    compEl.json = os.environ['CMSSW_BASE']+'/src/CMGTools/TTHAnalysis/data/json/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt'
+    compEl.splitFactor = 2
+
+    compEM = cfg.DataComponent( files = [
+
+    "root://eoscms.cern.ch//store/data/Run2015D/MuonEG/MINIAOD/PromptReco-v3/000/257/531/00000/D62608D5-FB65-E511-B031-02163E0145C1.root",
+    "root://eoscms.cern.ch//store/data/Run2015D/MuonEG/MINIAOD/PromptReco-v3/000/257/599/00000/FCE8F3F5-6066-E511-8E56-02163E014781.root",
+    "root://eoscms.cern.ch//store/data/Run2015D/MuonEG/MINIAOD/PromptReco-v3/000/256/941/00000/C4AEA503-0462-E511-B2AE-02163E012B0C.root"
+             ], name="data_RA5_sync_em", intLumi=1 )
+    compEM.triggers = FRTrigs
+    compEM.json = os.environ['CMSSW_BASE']+'/src/CMGTools/TTHAnalysis/data/json/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt'
+    compEM.splitFactor = 2
+
+    selectedComponents = [ compMu, compEl, compEM ]
+
+
+
 
 ## output histogram
 outputService=[]
