@@ -28,13 +28,9 @@ class METAnalyzer( Analyzer ):
     def declareHandles(self):
         super(METAnalyzer, self).declareHandles()
         self.handles['met'] = AutoHandle( self.cfg_ana.metCollection, 'std::vector<pat::MET>' )
-
-        if self.cfg_ana.storePuppiExtra:
-            self.handles['corX'] = AutoHandle( 'puppiMETEGCor:corX', 'float' )
-            self.handles['corY'] = AutoHandle( 'puppiMETEGCor:corY', 'float' )
         if self.cfg_ana.doMetNoPU: 
             self.handles['nopumet'] = AutoHandle( self.cfg_ana.noPUMetCollection, 'std::vector<pat::MET>' )
-        if self.cfg_ana.doTkMet or self.cfg_ana.doPuppiMet:
+        if self.cfg_ana.doTkMet:
             self.handles['cmgCand'] = AutoHandle( self.cfg_ana.candidates, self.cfg_ana.candidatesTypes )
             #self.handles['vertices'] =  AutoHandle( "offlineSlimmedPrimaryVertices", 'std::vector<reco::Vertex>', fallbackLabel="offlinePrimaryVertices" )
             self.mchandles['packedGen'] = AutoHandle( 'packedGenParticles', 'std::vector<pat::PackedGenParticle>' )
@@ -61,147 +57,47 @@ class METAnalyzer( Analyzer ):
         setattr(met, "upara"+postfix, u1)
         setattr(met, "uperp"+postfix, u2)
 
-
-    def makePuppiMETs(self, event):
-        chargedPuppi = []
-        photonsPuppi = []
-        neutralHadronsPuppi = []
-        hfPuppi = []
-
-        pfcands = self.handles['cmgCand'].product()
-
-        for pfcand in pfcands:
-
-            if (pfcand.charge()!=0):
-                pxyw = pfcand.px(), pfcand.py(), pfcand.puppiWeightNoLep()
-                chargedPuppi.append(pxyw)
-
-            if (pfcand.pdgId()==22):
-                pxyw = pfcand.px(), pfcand.py(), pfcand.puppiWeightNoLep()
-                photonsPuppi.append(pxyw)
-
-            if (pfcand.pdgId()==130):
-                pxyw = pfcand.px(), pfcand.py(), pfcand.puppiWeightNoLep()
-                neutralHadronsPuppi.append(pxyw)
-
-            if (pfcand.pdgId()==1 or pfcand.pdgId()==2):
-                pxyw = pfcand.px(), pfcand.py(), pfcand.puppiWeightNoLep()
-                hfPuppi.append(pxyw)
-
-        def sumXY(pxyws):
-            px, py = sum(x[0]*x[2] for x in pxyws), sum(x[1]*x[2] for x in pxyws)
-            return ROOT.reco.Particle.LorentzVector(-px, -py, 0, hypot(px,py))
-
-        setattr(event, "puppiMetCh"+self.cfg_ana.collectionPostFix, sumXY(chargedPuppi))
-        setattr(event, "puppiMetPh"+self.cfg_ana.collectionPostFix, sumXY(photonsPuppi))
-        setattr(event, "puppiMetNh"+self.cfg_ana.collectionPostFix, sumXY(neutralHadronsPuppi))
-        setattr(event, "puppiMetHF"+self.cfg_ana.collectionPostFix, sumXY(hfPuppi))
-
-        getattr(event,"puppiMetCh"+self.cfg_ana.collectionPostFix).sumEt = sum([hypot(x[0]*x[2],x[1]*x[2]) for x in chargedPuppi])
-        getattr(event,"puppiMetPh"+self.cfg_ana.collectionPostFix).sumEt = sum([hypot(x[0]*x[2],x[1]*x[2]) for x in photonsPuppi])
-        getattr(event,"puppiMetNh"+self.cfg_ana.collectionPostFix).sumEt = sum([hypot(x[0]*x[2],x[1]*x[2]) for x in neutralHadronsPuppi])
-        getattr(event,"puppiMetHF"+self.cfg_ana.collectionPostFix).sumEt = sum([hypot(x[0]*x[2],x[1]*x[2]) for x in hfPuppi])
-
-
-
     def makeTkMETs(self, event):
         charged = []
         chargedchs = []
         chargedPVLoose = []
-        chargedPUPVLoose = []
         chargedPVTight = []
-        chargedNoPV = []
-        chargedPVUsedInFit = []
-        nt = []
-        ntcentral = []
-        dochs=getattr(self.cfg_ana,"includeTkMetCHS",False)
-        dotight=getattr(self.cfg_ana,"includeTkMetPVTight",False)
-        doloose=getattr(self.cfg_ana,"includeTkMetPVLoose",False)
-        doPVUsedInFit=getattr(self.cfg_ana,"includeTkMetPVUsedInFit",False)
-        doNoPV=getattr(self.cfg_ana,"includeTkMetNoPV",False)
-        useLeptonPV=getattr(self.cfg_ana,"useLeptonPV",False)
-        doneutrals=getattr(self.cfg_ana,"includeNTMet",True)       
-
+        dochs=getattr(self.cfg_ana,"includeTkMetCHS",True)       
+        dotight=getattr(self.cfg_ana,"includeTkMetPVTight",True)       
+        doloose=getattr(self.cfg_ana,"includeTkMetPVLoose",True)       
         pfcands = self.handles['cmgCand'].product()
-        leadCharged,leadNeutral=None,None
-        
-        #set primary vertex to the leading pT lepton  
-        ipv=0
-        if useLeptonPV and len(event.selectedLeptons)>0:
-            lpv=event.selectedLeptons[0].associatedVertex
-            for ivtx in xrange(0,len(event.vertices)):
-                if event.vertices[ivtx].position()!=lpv.position(): continue
-                ipv=ivtx
-                break
 
         for pfcand in pfcands:
 
-            p = pfcand.p4()
-            isCentral=True if abs(p.eta())<2.4 else False
-            
-            ## ===> require the Track Candidate charge and with a  minimum dz 
-            if (pfcand.charge()==0):                 
-                nt.append(p)
-                if isCentral : 
-                    ntcentral.append(p)
-                    leadNeutral=p if not leadNeutral or leadNeutral.pt()<p.pt() else leadNeutral
-                continue
+## ===> require the Track Candidate charge and with a  minimum dz 
+            if (pfcand.charge()!=0):
 
-            pvflag = pfcand.fromPV(ipv)
+                pvflag = pfcand.fromPV()
+                pxy = pfcand.px(), pfcand.py()
 
-            if abs(pfcand.dz())<=self.cfg_ana.dzMax:
-                charged.append(p)
-                
-            if pvflag>0:
-                chargedchs.append(p)
+                if abs(pfcand.dz())<=self.cfg_ana.dzMax:
+                    charged.append(pxy)
 
-            #close to PV and not in the fit of another PV
-            if pvflag>1:
-                chargedPVLoose.append(p)
+                if dochs and  pvflag>0:
+                    chargedchs.append(pxy)
 
-                #clean wrt to selected leptons from the same PV 
-                veto=False
-                for l in event.selectedLeptons:
-                    if l.associatedVertex.position()!=pfcand.vertex() : continue
-                    if deltaR(l.p4(),p)>0.05 : continue
-                    veto=True
-                    break
-                if not veto:
-                    leadCharged=p if not leadCharged or leadCharged.pt()<p.pt() else leadCharged
+                if doloose and pvflag>1:
+                    chargedPVLoose.append(pxy)
 
-            #close or used in the fit of another PV
-            if pvflag<=1:
-                chargedPUPVLoose.append(p)
+                if dotight and pvflag>2:
+                    chargedPVTight.append(pxy)
 
-            if pvflag>2:
-                chargedPVTight.append(p)
-
-            if doNoPV and pvflag >= 0:
-                chargedNoPV.append(p)
-            if doPVUsedInFit and pvflag >= 3:
-                chargedPVUsedInFit.append(p)
-
-        def sumP4(p4s):
-            p4=ROOT.reco.Particle.LorentzVector(0.,0.,0.,0.)
-            for p in p4s: p4 -= p
-            return p4
-        for coll,p4coll,doit in [('tkMet',            charged,            True),
-                                 ('tkMetPVchs',       chargedchs,         dochs),
-                                 ('tkMetPVLoose',     chargedPVLoose,     doloose),
-                                 ('tkMetPUPVLoose',   chargedPUPVLoose,   doloose),
-                                 ('tkMetPVUsedInFit', chargedPVUsedInFit, doPVUsedInFit),
-                                 ('tkMetNoPV',        chargedNoPV,        doNoPV),
-                                 ('tkMetPVTight',     chargedPVTight,     dotight),
-                                 ('ntMet',            nt,                 doneutrals),
-                                 ('ntCentralMet',     ntcentral,          doneutrals),]:
-            if not doit: continue
-            setattr(event,coll+self.cfg_ana.collectionPostFix, sumP4(p4coll))
-            getattr(event,coll+self.cfg_ana.collectionPostFix).sumEt = sum(x.pt() for x in p4coll)
-            setattr(event,coll+'_Count'+self.cfg_ana.collectionPostFix, len(p4coll))
-
-        #add leading particles
-        setattr(event,'leadCharged'+self.cfg_ana.collectionPostFix,leadCharged if leadCharged else ROOT.reco.Particle.LorentzVector(0.,0.,0.,0.))
-        setattr(event,'leadNeutral'+self.cfg_ana.collectionPostFix,leadNeutral if leadNeutral else ROOT.reco.Particle.LorentzVector(0.,0.,0.,0.))
+        def sumXY(pxys):
+            px, py = sum(x[0] for x in pxys), sum(x[1] for x in pxys)
+            return ROOT.reco.Particle.LorentzVector(-px, -py, 0, hypot(px,py))
+        setattr(event, "tkMet"+self.cfg_ana.collectionPostFix, sumXY(charged))
+        setattr(event, "tkMetPVchs"+self.cfg_ana.collectionPostFix, sumXY(chargedchs))
+        setattr(event, "tkMetPVLoose"+self.cfg_ana.collectionPostFix, sumXY(chargedPVLoose))
+        setattr(event, "tkMetPVTight"+self.cfg_ana.collectionPostFix, sumXY(chargedPVTight))
+        getattr(event,"tkMet"+self.cfg_ana.collectionPostFix).sumEt = sum([hypot(x[0],x[1]) for x in charged])
+        getattr(event,"tkMetPVchs"+self.cfg_ana.collectionPostFix).sumEt = sum([hypot(x[0],x[1]) for x in chargedchs])
+        getattr(event,"tkMetPVLoose"+self.cfg_ana.collectionPostFix).sumEt = sum([hypot(x[0],x[1]) for x in chargedPVLoose])
+        getattr(event,"tkMetPVTight"+self.cfg_ana.collectionPostFix).sumEt = sum([hypot(x[0],x[1]) for x in chargedPVTight])
 
         if  hasattr(event,'zll_p4'):
             self.adduParaPerp(getattr(event,"tkMet"+self.cfg_ana.collectionPostFix), event.zll_p4,"_zll")
@@ -211,20 +107,9 @@ class METAnalyzer( Analyzer ):
 
 
     def makeGenTkMet(self, event):
-        genCharged,genChargedInc=[],[]
-        for x in self.mchandles['packedGen'].product():
-            if x.charge() == 0: continue
-            if x.status() != 1: continue
-            if abs(x.eta()) < 2.4 : genCharged.append( x.p4() )
-            if abs(x.eta()) < 5   : genChargedInc.append( x.p4() )
-        def sumP4(p4s):
-            p4=ROOT.reco.Particle.LorentzVector(0.,0.,0.,0.)
-            for p in p4s: p4 -= p
-            return p4
-        for coll,p4coll in [('tkGenMet',genCharged),
-                             ('tkGenMetInc',genChargedInc)]:
-            setattr(event,coll+self.cfg_ana.collectionPostFix, sumP4(p4coll))
-            getattr(event,coll+self.cfg_ana.collectionPostFix).sumEt = sum(x.pt() for x in p4coll)
+        genCharged = [ (x.px(),x.py()) for x in self.mchandles['packedGen'].product() if x.charge() != 0 and abs(x.eta()) < 2.4 ]
+        px, py = sum(x[0] for x in genCharged), sum(x[1] for x in genCharged)
+        setattr(event,"tkGenMet"+self.cfg_ana.collectionPostFix, ROOT.reco.Particle.LorentzVector(-px , -py, 0, hypot(px,py)))
 
     def makeMETNoMu(self, event):
         self.metNoMu = copy.deepcopy(self.met)
@@ -305,7 +190,7 @@ class METAnalyzer( Analyzer ):
         if self.applyJetSmearing:
           deltaMetSmear = getattr(event, 'deltaMetFromJetSmearing'+self.jetAnalyzerPostFix)
           self.applyDeltaMet(self.met, deltaMetSmear)
-
+            
         if (not self.cfg_ana.copyMETsByValue) and getattr(self.cfg_ana, 'makeShiftedMETs', True):
           shifts = [] 
           for obj in 'JetEn', 'JetRes', 'MuonEn', 'ElectronEn', 'PhotonEn', 'TauEn', 'UnclusteredEn':
@@ -321,16 +206,9 @@ class METAnalyzer( Analyzer ):
                m.setP4(self.met.shiftedP4(key))
                setattr(event, "met{0}_shifted_{1}".format(self.cfg_ana.collectionPostFix, i),m)
                setattr(event, "met{0}_shifted_{1}".format(self.cfg_ana.collectionPostFix, name),m)
-
+               
         self.met_sig = self.met.metSignificance()
         self.met_sumet = self.met.sumEt()
-
-        if self.cfg_ana.storePuppiExtra:
-            self.met.EGCorX = self.handles['corX'].product()[0]
-            self.met.EGCorY = self.handles['corY'].product()[0]
-            setattr(event,"met_EGCorX"+self.cfg_ana.collectionPostFix, self.met.EGCorX)
-            setattr(event,"met_EGCorY"+self.cfg_ana.collectionPostFix, self.met.EGCorY)
-
 
         if self.old74XMiniAODs and self.recalibrateMET != "type1":
            oldraw = self.met.shiftedP2_74x(12,0);
@@ -380,14 +258,11 @@ class METAnalyzer( Analyzer ):
     def process(self, event):
         self.readCollections( event.input)
         self.counters.counter('events').inc('all events')
-
+        
         self.makeMETs(event)
-
+        
         if self.cfg_ana.doTkMet: 
             self.makeTkMETs(event);
-
-        if self.cfg_ana.doPuppiMet:
-            self.makePuppiMETs(event);
 
         if getattr(self.cfg_ana,"doTkGenMet",self.cfg_ana.doTkMet) and self.cfg_comp.isMC and hasattr(event, 'genParticles'):
             self.makeGenTkMet(event)
@@ -406,19 +281,13 @@ setattr(METAnalyzer,"defaultConfig", cfg.Analyzer(
     old74XMiniAODs = False, # need to set to True to get proper Raw MET on plain 74X MC produced with CMSSW <= 7_4_12
     makeShiftedMETs = True,
     doTkMet = False,
-    doPuppiMet = False,
-    ### more on tkMET
-    includeTkMetCHS = False,
-    includeTkMetPVLoose = False,
-    includeTkMetPVTight = False,
-    includeTkMetNoPV = False,
-    includeTkMetPVUsedInFit = False,
-    ###
+    includeTkMetCHS = True,
+    includeTkMetPVLoose = True,
+    includeTkMetPVTight = True,
     doMetNoPU = False, # Not existing in MiniAOD at the moment
     doMetNoMu = False,  
     doMetNoEle = False,  
     doMetNoPhoton = False,  
-    storePuppiExtra = False,
     candidates='packedPFCandidates',
     candidatesTypes='std::vector<pat::PackedCandidate>',
     dzMax = 0.1,
